@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}SEOScope{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="14" cy="14" r="9" stroke="currentColor" stroke-width="3"/>
+          <path d="M21 21L27 27" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          <path d="M10.5 14L13 16.5L18 10.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="brand-name">SEOScope</span>
+    </a>
+    <span class="tagline">Local website SEO auditor</span>
+    <nav class="topnav">
+      <a href="/">New audit</a>
+    </nav>
+  </header>
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

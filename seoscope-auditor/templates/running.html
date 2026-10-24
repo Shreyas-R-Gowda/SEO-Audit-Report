@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block title %}Auditing {{ audit.root_url }}…{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Auditing {{ audit.root_url }}</h1>
+  <p class="muted">This page refreshes automatically while the crawl runs.</p>
+  <div class="spinner"></div>
+  <pre id="log" class="log"></pre>
+</section>
+<script>
+const auditId = {{ audit.id }};
+async function poll() {
+  const res = await fetch(`/audits/${auditId}/status`);
+  const data = await res.json();
+  document.getElementById('log').textContent = data.log.join("\n");
+  if (data.status === 'completed' || data.status === 'failed') {
+    window.location.reload();
+  } else {
+    setTimeout(poll, 1200);
+  }
+}
+poll();
+</script>
+{% endblock %}

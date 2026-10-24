@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SEO Audit Report — {{ audit.root_url }}</title>
+<style>
+  body { font-family: Helvetica, Arial, sans-serif; color: #1a1f2b; margin: 32px; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  h2 { font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin-top: 28px; }
+  .muted { color: #666; font-size: 12px; }
+  .score-block { display: flex; align-items: center; gap: 24px; margin: 16px 0; }
+  .score-number { font-size: 48px; font-weight: bold; }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11px; }
+  th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #f2f4f7; }
+  .sev-critical { color: #b00020; font-weight: bold; }
+  .sev-warning { color: #b36b00; font-weight: bold; }
+  .sev-info { color: #1565c0; font-weight: bold; }
+  .roadmap-step { margin-top: 12px; }
+  .recommendation { color: #146c43; }
+  .issue-card { border: 1px solid #ddd; border-radius: 4px; padding: 8px 12px; margin-top: 10px; }
+  .issue-head { font-size: 12px; margin-bottom: 4px; }
+  .issue-title { font-size: 13px; }
+  .issue-meta { color: #666; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; }
+</style>
+</head>
+<body>
+  <h1>SEO Audit Report</h1>
+  <p class="muted">{{ audit.root_url }} &middot; generated from {{ audit.pages_crawled }} crawled pages &middot; audit #{{ audit.id }}</p>
+
+  <div class="score-block">
+    <div class="score-number">{{ audit.overall_score }}</div>
+    <div>
+      <div><strong>Grade: {{ audit.overall_score | grade }}</strong></div>
+      {% for cat, score in category_scores.items() %}
+      <div>{{ cat|capitalize }}: {{ (score ~ '/100') if score is not none else 'No data (no pages could be analyzed)' }}</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <h2>Issue summary</h2>
+  <p>
+    <span class="sev-critical">{{ severity_counts.critical }} critical</span> &middot;
+    <span class="sev-warning">{{ severity_counts.warning }} warning</span> &middot;
+    <span class="sev-info">{{ severity_counts.info }} info</span>
+  </p>
+
+  <h2>Prioritized issues</h2>
+  {% for issue in issues %}
+  <div class="issue-card">
+    <div class="issue-head">
+      <span class="sev-{{ issue.severity }}">{{ issue.severity|upper }}</span>
+      &middot; {{ issue.category|capitalize }}
+      &middot; <span class="issue-meta">{{ issue.affected_count }} affected</span>
+    </div>
+    <div class="issue-title"><strong>{{ issue.title }}</strong></div>
+    <div>{{ issue.description }}</div>
+    <div class="recommendation">→ {{ issue.recommendation }}</div>
+    {% if issue.page_url %}<div class="muted">{{ issue.page_url }}</div>{% endif %}
+  </div>
+  {% endfor %}
+
+  <h2>Optimization roadmap</h2>
+  {% for step in roadmap %}
+  <div class="roadmap-step">
+    <strong>Step {{ step.step }} ({{ step.severity|capitalize }}):</strong> {{ step.intro }}
+    <ul>
+      {% for action in step.actions %}
+      <li>{{ action.title }} ({{ action.affected_count }} affected) — {{ action.recommendation }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endfor %}
+
+  <h2>Crawled pages</h2>
+  <table class="pages-table">
+    <colgroup>
+      <col width="38%"><col width="10%"><col width="14%"><col width="28%"><col width="10%">
+    </colgroup>
+    <thead><tr>
+      <th>URL</th><th>Status</th><th>Load time</th><th>Title</th><th>Words</th>
+    </tr></thead>
+    <tbody>
+      {% for p in pages %}
+      <tr>
+        <td>{{ p.url }}</td>
+        <td>{{ p.status_code or 'error' }}</td>
+        <td>{{ (p.load_time_ms or 0) | round(0) }}ms</td>
+        <td>{{ p.title or '—' }}</td>
+        <td>{{ p.word_count or 0 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

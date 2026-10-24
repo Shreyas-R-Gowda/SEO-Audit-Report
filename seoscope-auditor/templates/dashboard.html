@@ -1,0 +1,111 @@
+{% extends "layout.html" %}
+{% block title %}Audit — {{ audit.root_url }}{% endblock %}
+{% block content %}
+<section class="card audit-header">
+  <div>
+    <h1>{{ audit.root_url }}</h1>
+    <p class="muted">{{ audit.pages_crawled }} pages crawled · audit #{{ audit.id }}</p>
+  </div>
+  <div class="actions">
+    <a class="btn btn-ghost" href="/audits/{{ audit.id }}/report.html" target="_blank">View full report</a>
+    <a class="btn" href="/audits/{{ audit.id }}/report.pdf">Download PDF</a>
+  </div>
+</section>
+
+{% if audit.status == 'failed' %}
+<section class="card error-card">
+  <h2>Audit failed</h2>
+  <p>{{ audit.error }}</p>
+</section>
+{% endif %}
+
+<section class="card score-section">
+  {% set circumference = 263.9 %}
+  {% set offset = (circumference - (circumference * audit.overall_score / 100)) | round(1) %}
+  <div class="score-ring grade-{{ audit.overall_score | grade }}">
+    <svg viewBox="0 0 100 100">
+      <circle class="ring-track" cx="50" cy="50" r="42"></circle>
+      <circle class="ring-fill" cx="50" cy="50" r="42"
+              stroke-dasharray="{{ circumference }}" stroke-dashoffset="{{ offset }}"></circle>
+    </svg>
+    <div class="ring-label">
+      <span class="score-number">{{ audit.overall_score }}</span>
+      <span class="score-grade">Grade {{ audit.overall_score | grade }}</span>
+    </div>
+  </div>
+  <div class="category-scores">
+    {% for cat, score in category_scores.items() %}
+    <div class="category-row">
+      <span class="category-name category-{{ cat }}">{{ cat|capitalize }}</span>
+      {% if score is none %}
+      <div class="bar"><div class="bar-fill bar-nodata" style="width: 100%"></div></div>
+      <span class="category-score muted small" title="No pages could be analyzed for this category">No data</span>
+      {% else %}
+      <div class="bar"><div class="bar-fill bar-{{ cat }}" style="width: {{ score }}%"></div></div>
+      <span class="category-score">{{ score }}</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+    <div class="severity-counts">
+      <span class="sev-pill sev-critical">{{ severity_counts.critical }} critical</span>
+      <span class="sev-pill sev-warning">{{ severity_counts.warning }} warning</span>
+      <span class="sev-pill sev-info">{{ severity_counts.info }} info</span>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Prioritized issues</h2>
+  <table class="issues-table">
+    <thead><tr><th>Severity</th><th>Category</th><th>Issue</th><th>Affected</th></tr></thead>
+    <tbody>
+      {% for issue in issues %}
+      <tr>
+        <td><span class="badge sev-{{ issue.severity }}">{{ issue.severity }}</span></td>
+        <td>{{ issue.category|capitalize }}</td>
+        <td>
+          <strong>{{ issue.title }}</strong>
+          <div class="muted small">{{ issue.description }}</div>
+          <div class="recommendation">→ {{ issue.recommendation }}</div>
+          {% if issue.page_url %}<div class="muted small">{{ issue.page_url }}</div>{% endif %}
+        </td>
+        <td>{{ issue.affected_count }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="card">
+  <h2>Optimization roadmap</h2>
+  {% for step in roadmap %}
+  <div class="roadmap-step">
+    <h3>Step {{ step.step }}: <span class="sev-{{ step.severity }}">{{ step.severity|capitalize }}</span></h3>
+    <p class="muted">{{ step.intro }}</p>
+    <ul>
+      {% for action in step.actions %}
+      <li><strong>{{ action.title }}</strong> ({{ action.affected_count }} affected) — {{ action.recommendation }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endfor %}
+</section>
+
+<section class="card">
+  <h2>Crawled pages</h2>
+  <table class="pages-table">
+    <thead><tr><th>URL</th><th>Status</th><th>Load time</th><th>Title</th><th>Words</th></tr></thead>
+    <tbody>
+      {% for p in pages %}
+      <tr>
+        <td class="url-cell">{{ p.url }}</td>
+        <td>{{ p.status_code or 'error' }}</td>
+        <td>{{ (p.load_time_ms or 0) | round(0) }}ms</td>
+        <td>{{ p.title or '—' }}</td>
+        <td>{{ p.word_count or 0 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

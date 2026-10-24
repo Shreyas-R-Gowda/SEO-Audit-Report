@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% block title %}SEOScope — New Audit{% endblock %}
+{% block content %}
+<section class="card hero">
+  <span class="eyebrow">Technical + on-page SEO</span>
+  <h1>Audit a website's SEO</h1>
+  <p class="muted">Crawls a site, checks technical and on-page SEO, and scores the result —
+    with prioritized issues and a step-by-step fix roadmap.</p>
+  <form method="post" action="/audits" class="audit-form">
+    <label for="url">Website URL</label>
+    <input id="url" name="url" type="text" placeholder="example.com" required>
+
+    <label for="max_pages">Pages to crawl (max {{ max_max_pages }})</label>
+    <input id="max_pages" name="max_pages" type="number" min="1" max="{{ max_max_pages }}" value="{{ default_max_pages }}">
+
+    <button type="submit">Run Audit</button>
+  </form>
+  <ol class="how-it-works">
+    <li><span class="step-num">1</span> Crawl pages &amp; sitemap</li>
+    <li><span class="step-num">2</span> Check technical + on-page SEO</li>
+    <li><span class="step-num">3</span> Score, prioritize &amp; map a fix roadmap</li>
+  </ol>
+</section>
+
+<section class="card">
+  <h2>Past audits</h2>
+  {% if audits %}
+  <table class="audits-table">
+    <thead>
+      <tr><th>Site</th><th>Status</th><th>Pages</th><th>Score</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for a in audits %}
+      <tr>
+        <td><a href="/audits/{{ a.id }}">{{ a.root_url }}</a></td>
+        <td><span class="badge status-{{ a.status }}">{{ a.status }}</span></td>
+        <td>{{ a.pages_crawled or '-' }}</td>
+        <td>{{ a.overall_score if a.overall_score is not none else '-' }}</td>
+        <td>
+          <form method="post" action="/audits/{{ a.id }}/delete" onsubmit="return confirm('Delete this audit?');">
+            <button type="submit" class="link-btn">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No audits yet. Run your first one above.</p>
+  {% endif %}
+</section>
+{% endblock %}
